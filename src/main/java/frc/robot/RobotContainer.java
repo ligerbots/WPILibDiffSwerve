@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.DriveCommand;
 import frc.robot.subsystems.Drivetrain;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 
@@ -21,7 +23,13 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final XboxController m_controller = new XboxController(0);
   private final Drivetrain m_swerve = new Drivetrain();
-
+  private final DriveCommand driveCommand = new DriveCommand(
+          m_swerve,
+          ()-> m_controller.getX(Hand.kLeft),
+          ()-> m_controller.getY(Hand.kLeft),
+          ()-> m_controller.getX(Hand.kRight),
+          ()-> m_controller.getBumper(Hand.kLeft)
+  );
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -46,5 +54,9 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
     return null;
+  }
+
+  public DriveCommand getDriveCommand() {
+    return driveCommand;
   }
 }
