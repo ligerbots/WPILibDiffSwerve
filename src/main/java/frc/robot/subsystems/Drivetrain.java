@@ -16,16 +16,26 @@ public class Drivetrain {
   public static final double kMaxSpeed = 3.0; // 3 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
+  private static final double offsetX = 11.075;
+  private static final double offsetY = 12.575;
   /*From swerve.toml*/
-  private final Translation2d m_frontLeftLocation = new Translation2d(Units.inchesToMeters(11.075), Units.inchesToMeters(12.575));
-  private final Translation2d m_frontRightLocation = new Translation2d(Units.inchesToMeters(11.075), Units.inchesToMeters(-12.575));
-  private final Translation2d m_backLeftLocation = new Translation2d(Units.inchesToMeters(-11.075), Units.inchesToMeters(12.575));
-  private final Translation2d m_backRightLocation = new Translation2d(Units.inchesToMeters(-11.075), Units.inchesToMeters(-12.575));
+  private final Translation2d m_frontLeftLocation = new Translation2d(Units.inchesToMeters(offsetX), Units.inchesToMeters(offsetY));
+  private final Translation2d m_frontRightLocation = new Translation2d(Units.inchesToMeters(offsetX), Units.inchesToMeters(-offsetY));
+  private final Translation2d m_backLeftLocation = new Translation2d(Units.inchesToMeters(-offsetX), Units.inchesToMeters(offsetY));
+  private final Translation2d m_backRightLocation = new Translation2d(Units.inchesToMeters(-offsetX), Units.inchesToMeters(-offsetY));
 
-  private final SwerveModuleWrapper m_frontLeft = new SwerveModuleWrapper(1, 2);
-  private final SwerveModuleWrapper m_frontRight = new SwerveModuleWrapper(3, 4);
-  private final SwerveModuleWrapper m_backLeft = new SwerveModuleWrapper(5, 6);
-  private final SwerveModuleWrapper m_backRight = new SwerveModuleWrapper(7, 8);
+  private final SwerveModuleWrapper m_frontLeft = new SwerveModuleWrapper(
+          12, 11, 10, 42.7, offsetX, offsetY
+  );
+  private final SwerveModuleWrapper m_frontRight = new SwerveModuleWrapper(
+          9,8,7, 3.07, offsetX, -offsetY
+  );
+  private final SwerveModuleWrapper m_backLeft = new SwerveModuleWrapper(
+          3,2,1,-52.38, -offsetX, offsetY
+  );
+  private final SwerveModuleWrapper m_backRight = new SwerveModuleWrapper(
+          6,5,4, -50.54, -offsetX, -offsetY
+  );
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
