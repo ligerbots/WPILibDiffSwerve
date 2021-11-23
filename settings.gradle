@@ -23,6 +23,9 @@ pluginManagement {
             name 'frcHome'
             url frcHomeMaven
         }
+
+        include ":SwerveLibrary"
+        project(":SwerveLibrary").projectDir = file("SwerveLibrary")
     }
 }
 

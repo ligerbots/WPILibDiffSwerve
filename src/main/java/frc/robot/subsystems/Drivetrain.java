@@ -5,25 +5,40 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpiutil.math.MathUtil;
 
 /** Represents a swerve drive style drivetrain. */
 public class Drivetrain {
-  public static final double kMaxSpeed = 3.0; // 3 meters per second
-  public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
+  public static final double kMaxSpeed = Units.feetToMeters(14.7); // 14.7 feet per second
+  public static final double kMaxSpeedTurtle = Units.feetToMeters(5.0); // 5.0 feet per second
+  public static final double kMaxAngularSpeed = 2*Math.PI; // rotations per second
 
-  private final Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
-  private final Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
-  private final Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
-  private final Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
+  private static final double offsetX = 11.075;
+  private static final double offsetY = 12.575;
+  /*From swerve.toml*/
+  private final Translation2d m_frontLeftLocation = new Translation2d(Units.inchesToMeters(offsetX), Units.inchesToMeters(offsetY));
+  private final Translation2d m_frontRightLocation = new Translation2d(Units.inchesToMeters(offsetX), Units.inchesToMeters(-offsetY));
+  private final Translation2d m_backLeftLocation = new Translation2d(Units.inchesToMeters(-offsetX), Units.inchesToMeters(offsetY));
+  private final Translation2d m_backRightLocation = new Translation2d(Units.inchesToMeters(-offsetX), Units.inchesToMeters(-offsetY));
 
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2);
-  private final SwerveModule m_frontRight = new SwerveModule(3, 4);
-  private final SwerveModule m_backLeft = new SwerveModule(5, 6);
-  private final SwerveModule m_backRight = new SwerveModule(7, 8);
+  private final SwerveModuleWrapper m_frontLeft = new SwerveModuleWrapper(
+          12, 11, 10, 42.7, offsetX, offsetY
+  );
+  private final SwerveModuleWrapper m_frontRight = new SwerveModuleWrapper(
+          9,8,7, 3.07, offsetX, -offsetY
+  );
+  private final SwerveModuleWrapper m_backLeft = new SwerveModuleWrapper(
+          3,2,1,-52.38, -offsetX, offsetY
+  );
+  private final SwerveModuleWrapper m_backRight = new SwerveModuleWrapper(
+          6,5,4, -50.54, -offsetX, -offsetY
+  );
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
@@ -34,7 +49,12 @@ public class Drivetrain {
   private final SwerveDriveOdometry m_odometry =
       new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d());
 
-      
+  // Control Objects
+  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+
+
   public Drivetrain() {
     m_gyro.reset();
   }
@@ -49,6 +69,7 @@ public class Drivetrain {
    */
   @SuppressWarnings("ParameterName")
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+
     var swerveModuleStates =
         m_kinematics.toSwerveModuleStates(
             fieldRelative
@@ -61,6 +82,43 @@ public class Drivetrain {
     m_backRight.setDesiredState(swerveModuleStates[3]);
   }
 
+  public void driveWithJoystick(double controllerx, double controllery, double controllerrotation, boolean turtlemode, boolean fieldRelative) {
+    double maxSpeed= turtlemode ? Drivetrain.kMaxSpeedTurtle : Drivetrain.kMaxSpeed;
+    // Get the x speed. We are inverting this because Xbox controllers return
+    // negative values when we push forward.
+
+    final var xSpeed =
+            -m_xspeedLimiter.calculate(applyDeadband(controllery, 0.02))
+                    * maxSpeed;
+
+    // Get the y speed or sideways/strafe speed. We are inverting this because
+    // we want a positive value when we pull to the left. Xbox controllers
+    // return positive values when you pull to the right by default.
+    final var ySpeed =
+            -m_yspeedLimiter.calculate(applyDeadband(controllerx, 0.02))
+                    * maxSpeed;
+
+    // Get the rate of angular rotation. We are inverting this because we want a
+    // positive value when we pull to the left (remember, CCW is positive in
+    // mathematics). Xbox controllers return positive values when you pull to
+    // the right by default.
+    final var rot =
+            -m_rotLimiter.calculate(applyDeadband(controllerrotation, 0.02))
+                    * Drivetrain.kMaxAngularSpeed;
+
+    this.drive(xSpeed, ySpeed, rot, fieldRelative);
+  }
+  private static double applyDeadband(double value, double deadband) {
+    if (Math.abs(value) > deadband) {
+      if (value > 0.0) {
+        return (value - deadband) / (1.0 - deadband);
+      } else {
+        return (value + deadband) / (1.0 - deadband);
+      }
+    } else {
+      return 0.0;
+    }
+  }
   /** Updates the field relative position of the robot. */
   public void updateOdometry() {
     m_odometry.update(
