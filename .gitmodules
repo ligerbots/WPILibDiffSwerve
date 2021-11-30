@@ -1,3 +1,3 @@
 [submodule "SwerveLibrary"]
 	path = SwerveLibrary
-	url = git@github.com:ligerbots/SwerveLibrary.git
+	url = https://github.com/ligerbots/SwerveLibrary.git

@@ -40,8 +40,9 @@ public class SwerveModuleWrapper {
                 new Falcon500(canID0, falconConfig), // motors/0
                 new Falcon500(canID1, falconConfig) // motors/1
         };
+        // "raw" sensor (which is not the CANcoder) is 0-1, so ratio is 1/360
         PositionSensor azimuthSensor = new SensorTransmission(new SwerveCANcoder(canIDAzimuth),
-                new SensorTransmissionConfiguration(makeSensorTransmissionConfig(false, 1, offsetAzimuth)));
+                new SensorTransmissionConfiguration(makeSensorTransmissionConfig(false, 1.0/360.0, offsetAzimuth)));
 
         Config config = Config.inMemory();
         config.set("location-inches.x", location_x);

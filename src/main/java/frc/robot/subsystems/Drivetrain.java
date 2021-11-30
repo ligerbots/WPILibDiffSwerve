@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -89,6 +90,10 @@ public class Drivetrain extends SubsystemBase {
         // Get the x speed. We are inverting this because Xbox controllers return
         // negative values when we push forward.
 
+        SmartDashboard.putNumber("ControllerX", controllerx);
+        SmartDashboard.putNumber("ControllerY", controllery);
+        SmartDashboard.putNumber("ControllerRot", controllerrotation);
+       
         final var xSpeed = -m_xspeedLimiter.calculate(applyDeadband(controllery, 0.02)) * maxSpeed;
 
         // Get the y speed or sideways/strafe speed. We are inverting this because
