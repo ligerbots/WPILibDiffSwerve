@@ -94,18 +94,18 @@ public class Drivetrain extends SubsystemBase {
         SmartDashboard.putNumber("ControllerY", controllery);
         SmartDashboard.putNumber("ControllerRot", controllerrotation);
        
-        final var xSpeed = -m_xspeedLimiter.calculate(applyDeadband(controllery, 0.02)) * maxSpeed;
+        final var xSpeed = -m_xspeedLimiter.calculate(applyDeadband(controllery, 0.1)) * maxSpeed;
 
         // Get the y speed or sideways/strafe speed. We are inverting this because
         // we want a positive value when we pull to the left. Xbox controllers
         // return positive values when you pull to the right by default.
-        final var ySpeed = -m_yspeedLimiter.calculate(applyDeadband(controllerx, 0.02)) * maxSpeed;
+        final var ySpeed = -m_yspeedLimiter.calculate(applyDeadband(controllerx, 0.1)) * maxSpeed;
 
         // Get the rate of angular rotation. We are inverting this because we want a
         // positive value when we pull to the left (remember, CCW is positive in
         // mathematics). Xbox controllers return positive values when you pull to
         // the right by default.
-        final var rot = -m_rotLimiter.calculate(applyDeadband(controllerrotation, 0.02)) * kMaxAngularSpeed;
+        final var rot = -m_rotLimiter.calculate(applyDeadband(controllerrotation, 0.1)) * kMaxAngularSpeed;
 
         this.drive(xSpeed, ySpeed, rot, fieldRelative);
     }
